@@ -32,7 +32,7 @@ class UserForm
                     ->label('Contraseña')
                     ->password()
                     ->hiddenOn('edit')
-                    ->requiredOn('create')
+                    ->required(fn ($record) => $record === null)
                     ->minLength(8)
                     ->maxLength(255),
                 Select::make('roles')
