@@ -31,8 +31,8 @@ class UserForm
                 TextInput::make('password')
                     ->label('Contraseña')
                     ->password()
-                    ->hiddenOn('edit')
-                    ->required(fn ($record) => $record === null)
+                    /* ->hiddenOn('edit')
+                    ->required(fn ($record) => $record === null) */
                     ->minLength(8)
                     ->maxLength(255),
                 Select::make('roles')
