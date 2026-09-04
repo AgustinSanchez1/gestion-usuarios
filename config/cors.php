@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['https://dgrhs_cv.siprosa.gob.ar/consultas-dgrhs'],
+    'allowed_origins' => ['https://dgrhs_cv.siprosa.gob.ar'],
 
     'allowed_origins_patterns' => [],
 
