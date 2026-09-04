@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'siarhu' => [
+        'url'      => env('API_SIARHU'),
+        'email'    => env('SIARHU_DEFAULT_EMAIL'),
+        'username' => env('SIARHU_DEFAULT_USERNAME'),
+        'password' => env('SIARHU_DEFAULT_PASSWORD'),
+    ],
+
 ];

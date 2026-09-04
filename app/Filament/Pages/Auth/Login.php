@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Auth;
 
+use App\Models\System;
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use Filament\Auth\Http\Responses\Contracts\LoginResponse;
 use Filament\Auth\MultiFactor\Contracts\HasBeforeChallengeHook;
@@ -12,6 +13,7 @@ use Filament\Schemas\Components\Component;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Timebox;
 use Illuminate\Validation\ValidationException;
@@ -69,8 +71,11 @@ class Login extends BaseLogin
 
         /** @var SessionGuard $authGuard */
         $authGuard = Filament::auth();
+        $guardName = $authGuard->getName();
 
-        $authProvider = $authGuard->getProvider(); /** @phpstan-ignore-line */
+        $authProvider = $authGuard->getProvider();
+        /** @phpstan-ignore-line */
+
         $credentials = $this->getCredentialsFromFormData($data);
         $remember = $data['remember'] ?? false;
         $timeboxDuration = (int) config('auth.timebox_duration', 200_000);
@@ -80,7 +85,10 @@ class Login extends BaseLogin
 
             $user = $authProvider->retrieveByCredentials($credentials);
 
-            if ((! $user) || (! $authProvider->validateCredentials($user, $credentials))) {
+            $teamId = System::where('slug', 'gestion-usuarios')->value('id');
+            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($teamId);
+
+            if ((!$user) || (! $authProvider->validateCredentials($user, $credentials))) {
                 $this->userUndertakingMultiFactorAuthentication = null;
 
                 $this->fireFailedEvent($authGuard, $user, $credentials);
@@ -88,7 +96,7 @@ class Login extends BaseLogin
             }
 
             // Validación explícita del rol 'admin' con mensaje específico
-            if (! $user->hasRole('admin')) {
+            if (!$user->hasRole('admin')) {
                 $this->userUndertakingMultiFactorAuthentication = null;
 
                 $this->fireFailedEvent($authGuard, $user, $credentials);
@@ -134,7 +142,7 @@ class Login extends BaseLogin
         }
 
         // Validación del rol 'admin' también en el inicio de sesión final
-        if (! $authGuard->attemptWhen($credentials, fn (Authenticatable $user): bool => $user->hasRole('admin'), $remember)) {
+        if (!$authGuard->attemptWhen($credentials, fn(Authenticatable $user): bool => $user->hasRole('admin'), $remember)) {
             $this->fireFailedEvent($authGuard, $user, $credentials);
             $this->throwFailureValidationException();
         }

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
@@ -38,11 +39,7 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+    
     protected function casts(): array
     {
         return [
@@ -52,10 +49,6 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Determine if the user can access the Filament admin panel.
-     * Only users with the 'admin' role are allowed.
-     */
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->hasRole('admin');

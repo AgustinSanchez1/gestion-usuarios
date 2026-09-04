@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Roles\Schemas;
 
+use App\Models\System;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -13,6 +14,12 @@ class RoleForm
     {
         return $schema
             ->components([
+                Select::make('team_id')
+                    ->label('Sistema')
+                    ->options(System::all()->pluck('nombre', 'id'))
+                    ->searchable()
+                    ->preload()
+                    ->placeholder('Sin sistema (global)'),
                 TextInput::make('name')
                     ->label('Nombre del rol')
                     ->required()

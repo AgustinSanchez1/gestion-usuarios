@@ -15,6 +15,20 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         ]);
+
+        $middleware->api(append: [
+            \App\Http\Middleware\SetSystemTeam::class,
+        ]);
+
+        $middleware->web(append: [
+            \App\Http\Middleware\SetSystemTeam::class,
+        ]);
+
+        $middleware->validateCsrfTokens(
+            except: [
+                'api/auth/login',
+            ]
+        );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
