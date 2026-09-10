@@ -21,7 +21,7 @@ class SystemForm
                     ->validationMessages([
                         'regex' => 'El slug solo puede contener letras minúsculas, números, guiones y guiones bajos.',
                     ]),
-                TextInput::make('nombre')
+                TextInput::make('name')
                     ->label('Nombre')
                     ->required()
                     ->maxLength(255),

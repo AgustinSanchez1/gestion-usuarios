@@ -12,11 +12,16 @@ class RoleForm
 {
     public static function configure(Schema $schema): Schema
     {
+
+        $systems = System::all()->pluck('name', 'id');
+
+        $permissions = Permission::all()->pluck('name', 'id');
+
         return $schema
             ->components([
                 Select::make('team_id')
                     ->label('Sistema')
-                    ->options(System::all()->pluck('nombre', 'id'))
+                    ->options($systems)
                     ->searchable()
                     ->preload()
                     ->placeholder('Sin sistema (global)'),
@@ -29,7 +34,7 @@ class RoleForm
                     ->label('Permisos')
                     ->multiple()
                     ->relationship('permissions', 'name')
-                    ->options(Permission::all()->pluck('name', 'id'))
+                    ->options($permissions)
                     ->preload(),
             ]);
     }
