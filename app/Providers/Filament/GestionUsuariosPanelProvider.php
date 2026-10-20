@@ -7,6 +7,7 @@ use App\Filament\Resources\Permissions\PermissionResource;
 use App\Filament\Resources\Roles\RoleResource;
 use App\Filament\Resources\Systems\SystemResource;
 use App\Filament\Resources\Users\UserResource;
+use App\Http\Middleware\SetGestionUsuariosSystem;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -33,6 +34,9 @@ class GestionUsuariosPanelProvider extends PanelProvider
                 PermissionResource::class,
                 SystemResource::class
             ])
+            ->middleware([
+                SetGestionUsuariosSystem::class,
+            ], isPersistent: true)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

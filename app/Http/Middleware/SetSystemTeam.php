@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\System;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 

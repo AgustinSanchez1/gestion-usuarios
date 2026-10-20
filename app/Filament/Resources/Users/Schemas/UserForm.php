@@ -7,7 +7,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use App\Models\System;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use App\Services\UserSystemRoles;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 
 class UserForm
 {
@@ -24,6 +27,12 @@ class UserForm
                     ->label('Nombre completo')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('idagente')
+                    ->label('ID de agente')
+                    ->numeric()
+                    ->nullable()
+                    ->rules(['integer', 'between:-2147483648,2147483647'])
+                    ->dehydrateStateUsing(fn ($state) => blank($state) ? null : $state),
                 TextInput::make('email')
                     ->label('Correo electrónico')
                     ->email()
@@ -42,12 +51,19 @@ class UserForm
                     ->schema([
                         Select::make('system_id')
                             ->label('Sistema')
-                            ->options(System::pluck('name', 'id'))
-                            ->required()
+                            ->options(fn () => System::pluck('name', 'id'))
+                            ->placeholder('Sin sistema')
+                            ->live()
+                            ->afterStateUpdated(fn (Set $set) => $set('role_id', null))
                             ->searchable(),
                         Select::make('role_id')
                             ->label('Rol')
-                            ->options(Role::pluck('name', 'id'))
+                            ->options(fn (Get $get, ?User $record) => app(UserSystemRoles::class)->options($record, $get('system_id')))
+                            ->getOptionLabelUsing(function ($value) {
+                                $roleClass = config('permission.models.role');
+
+                                return $roleClass::find($value)?->name;
+                            })
                             ->required()
                             ->searchable(),
                     ])

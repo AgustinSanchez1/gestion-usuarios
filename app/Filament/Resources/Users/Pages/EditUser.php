@@ -3,14 +3,12 @@
 namespace App\Filament\Resources\Users\Pages;
 
 use App\Filament\Resources\Users\UserResource;
+use App\Services\UserSystemRoles;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Spatie\Permission\Models\Role;
 
 class EditUser extends EditRecord
 {
@@ -18,60 +16,23 @@ class EditUser extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
-        ];
+        return [DeleteAction::make(), ForceDeleteAction::make(), RestoreAction::make()];
     }
 
-    protected function mutateFormDataBeforeUpdate(array $data): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
-        // Eliminar system_roles para que no se intente guardar en el modelo User
-        unset($data['system_roles']);
-
-        // Hash password si se proporcionó
-        if (! empty($data['password'])) {
-            $data['password'] = Hash::make($data['password']);
-        }
+        unset($data['password']);
+        $data['system_roles'] = app(UserSystemRoles::class)->load($this->getRecord());
 
         return $data;
     }
 
-    protected function afterSave(): void
+    protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $record = $this->record;
-        $systemRoles = $this->form->getRawState()['system_roles'] ?? [];
-
-        $this->syncSystemRoles($record, $systemRoles);
-    }
-
-    protected function syncSystemRoles($user, array $systemRoles): void
-    {
-        // Eliminar todos los roles actuales (sin importar equipo)
-        $user->syncRoles([]);
-        $team_id = app(\Spatie\Permission\PermissionRegistrar::class)->getPermissionsTeamId();
-
-        foreach ($systemRoles as $item) {
-            $roleId = $item['role_id'] ?? null;
-            $systemId = $item['system_id'] ?? null;
-
-            if (! $roleId || ! $systemId) {
-                continue;
-            }
-
-            $role = Role::find($roleId);
-            if (! $role) {
-                continue;
-            }
-
-            // Setear el equipo activo antes de asignar
-            app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($systemId);
-
-            $user->assignRole($role);
+        if (blank($data['password'] ?? null)) {
+            unset($data['password']);
         }
 
-        // Restaurar equipo activo
-        app(\Spatie\Permission\PermissionRegistrar::class)->setPermissionsTeamId($team_id);
+        return app(UserSystemRoles::class)->update($record, $data);
     }
 }
