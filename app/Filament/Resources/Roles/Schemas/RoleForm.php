@@ -13,7 +13,7 @@ class RoleForm
     public static function configure(Schema $schema): Schema
     {
 
-        $systems = System::all()->pluck('name', 'id');
+        $systems = System::query()->orderBy('name')->pluck('name', 'id');
 
         $permissions = Permission::all()->pluck('name', 'id');
 
@@ -24,6 +24,8 @@ class RoleForm
                     ->options($systems)
                     ->searchable()
                     ->preload()
+                    ->exists(System::class, 'id')
+                    ->dehydrateStateUsing(fn ($state) => filled($state) ? $state : null)
                     ->placeholder('Sin sistema (global)'),
                 TextInput::make('name')
                     ->label('Nombre del rol')
